@@ -15,9 +15,7 @@
 */
 package com.rmbcorp.organicchemistry.elements;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /** API Important Notice and Dev Instructions:
@@ -26,19 +24,24 @@ import java.util.Map;
  */
 public class Element {
 
-    private static final char $ = ' ';
 
+    public static final int DEFAULT_BOND_CAPACITY = 4;
     private final ElementType primitive;
     private Orbital orbitals;
-    private List<Element> elementsBonded = new ArrayList<>(4);
+    private BondGroup elementsBonded;
 
     Element(ElementType elementType) {
         primitive = elementType;
         orbitals = new Orbital(primitive.getOrbitalReference());
+        elementsBonded = new BondGroup(DEFAULT_BOND_CAPACITY);
     }
 
     private char[] abbv() {
         return primitive.getAbbv();
+    }
+
+    float electroNegativity() {
+        return primitive.getAtomicNumber();//will need to implement actual electronegativity
     }
 
     boolean canBond() {
@@ -46,21 +49,15 @@ public class Element {
     }
 
     boolean bond(Element element) {
-        return orbitals.bond(element.orbitals) && element.elementsBonded.add(this) && elementsBonded.add(element);
+        return orbitals.bond(element.orbitals) && element.elementsBonded.add(this, elementsBonded.add(element)) > -1;
     }
 
     int bondCountWith(Element otherElement) {
-        int count = 0;
-        for (Element element : elementsBonded) {
-            if (element.equals(otherElement)) {
-                count++;
-            }
-        }
-        return count;
+        return elementsBonded.bondCountWith(otherElement);
     }
 
     int totalBondCount() {
-        return elementsBonded.size();
+        return elementsBonded.bondCount();
     }
 
     static boolean bond(Element first, Element second) {
@@ -79,9 +76,9 @@ public class Element {
     static final int[][] disps = { { -1, 0}, { 0, 2 }, { 1, 0 }, { 0, -2 } };
 
     static void graph(Element prevNode, Element rootNode, Map<int[], Element> graph, int[] rootNodeCoords, int[] extrema) {
-        for (int i = 0; i < rootNode.elementsBonded.size(); i++) {
+        for (int i = 0; i < DEFAULT_BOND_CAPACITY; i++) {
             Element currNode = rootNode.elementsBonded.get(i);
-            if (!currNode.equals(prevNode)) {
+            if (currNode != null && !currNode.equals(prevNode)) {
                 int[] currCoords = {rootNodeCoords[0] + disps[i][0], rootNodeCoords[1] + disps[i][1]};
                 graph(rootNode, currNode, graph, currCoords, extrema);
                 putGraph(graph, currNode, currCoords, i);
@@ -102,7 +99,7 @@ public class Element {
         for (Map.Entry<int[], Element> entry : graph.entrySet()) {
             currGraphItem = entry.getKey();
             if (currGraphItem[0] == currCoords[0] && currGraphItem[1] == currCoords[1]) {
-                int[] newDisp = disps[(dir + 2) % 4];
+                int[] newDisp = disps[(dir + 2) % DEFAULT_BOND_CAPACITY];
                 currCoords[0] += 2 * newDisp[0];
                 currCoords[1] += 2 * newDisp[1];
             }

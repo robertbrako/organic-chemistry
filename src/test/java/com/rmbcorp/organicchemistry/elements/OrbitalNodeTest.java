@@ -73,33 +73,4 @@ public class OrbitalNodeTest {
         assertTrue(HYDROGEN.getOrbitalReference().canBond());
         assertTrue(carbonLastNode.equals(CARBON.getOrbitalReference().getLastNodeEnergyType()));
     }
-
-    @Test
-    public void weCanCreateMethaneTest() {
-        Element carbon = new Element(CARBON);
-        for (int i = 0; i  < 4; i++) {
-            Element.bond(carbon, new Element(HYDROGEN));
-        }
-        assertEquals(4, carbon.totalBondCount());
-        assertFalse(carbon.canBond());
-    }
-
-    @Test
-    public void graphTest() {
-        Element carbon1 = prepareMethyl(3);
-        Element carbon2 = prepareMethyl(3);
-        Element.bond(carbon1, carbon2);
-        char[][] graph = Element.graph(carbon2);
-        for (char[] line : graph) {
-            System.out.println(line);
-        }
-    }
-
-    private Element prepareMethyl(int hCount) {
-        Element carbon = new Element(CARBON);
-        for (int i = 0; i  < hCount; i++) {
-            Element.bond(carbon, new Element(HYDROGEN));
-        }
-        return carbon;
-    }
 }
