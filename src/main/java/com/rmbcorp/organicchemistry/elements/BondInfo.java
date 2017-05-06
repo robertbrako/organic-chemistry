@@ -15,28 +15,26 @@
 */
 package com.rmbcorp.organicchemistry.elements;
 
-import org.junit.Test;
+class BondInfo {
 
-import static com.rmbcorp.organicchemistry.elements.ElementType.*;
-import static org.junit.Assert.assertTrue;
+    private static final int[][] bondLengthMap = initializeBondLengthMap();
 
-public class OrbitalNodeTest {
-
-    @Test
-    public void verifyHydrogenOrbitalsTest() {
-        Orbital hydrogenOrbital = HYDROGEN.getOrbitalReference();
-        assertTrue(hydrogenOrbital.getLastNodeEnergyType().equals(OrbitalNode.EnergyType.type1S));
+    /** any hydrogen bonds have length 1; any other bonds are length 4 for now.**/
+    private static int[][] initializeBondLengthMap() {
+        int[][] map = new int[128][128];
+        for (int i = 0; i < map.length; i++) {
+            for (int j = 0; j < map[i].length; j++) {
+                if (i < 2 || j < 2) {
+                    map[i][j] = 1;
+                } else {
+                    map[i][j] = 4;
+                }
+            }
+        }
+        return map;
     }
 
-    @Test
-    public void verifyCarbonOrbitalsTest() {
-        Orbital carbonOrbital = CARBON.getOrbitalReference();
-        assertTrue(carbonOrbital.getLastNodeEnergyType().equals(OrbitalNode.EnergyType.type2P));
-    }
-
-    @Test
-    public void verifyZincOrbitalsTest() {
-        Orbital zincOrbital = ZINC.getOrbitalReference();
-        assertTrue(zincOrbital.getLastNodeEnergyType().equals(OrbitalNode.EnergyType.type3D));
+    static int getBondLength(int atomicNumber1, int atomicNumber2) {
+        return BondInfo.bondLengthMap[atomicNumber1][atomicNumber2];
     }
 }

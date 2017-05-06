@@ -17,13 +17,46 @@ package com.rmbcorp.organicchemistry.elements;
 
 import org.junit.Test;
 
-import static com.rmbcorp.organicchemistry.elements.ElementType.CARBON;
-import static com.rmbcorp.organicchemistry.elements.ElementType.HYDROGEN;
-import static com.rmbcorp.organicchemistry.elements.ElementType.NITROGEN;
+import static com.rmbcorp.organicchemistry.elements.ElementType.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 public class ElementTest {
+
+    private static final boolean DEBUG = false;
+
+    @Test
+    public void hydrogenBondTest() {
+        Element firstH = new Element(HYDROGEN);
+        Element secondH = new Element(HYDROGEN);
+        assertTrue(firstH.bondCountWith(secondH) == 0);
+        assertTrue(firstH.canBond());
+        assertTrue(secondH.canBond());
+
+        Element.bond(firstH, secondH);
+        assertTrue(firstH.bondCountWith(secondH) == 1);
+        assertFalse(firstH.canBond());
+        assertFalse(secondH.canBond());
+
+        Element.bond(firstH, secondH);
+        assertTrue(firstH.bondCountWith(secondH) == 1);
+    }
+
+    @Test
+    public void primitivesUnaffectedByInstancesTest() {
+        OrbitalNode.EnergyType carbonLastNode = CARBON.getOrbitalReference().getLastNodeEnergyType();
+        Element hydrogen = new Element(HYDROGEN);
+        Element carbon = new Element(CARBON);
+        Element.bond(hydrogen, carbon);
+        assertTrue(hydrogen.bondCountWith(carbon) == 1);
+
+        Element newHydrogen = new Element(HYDROGEN);
+        assertTrue(newHydrogen.bondCountWith(carbon) == 0);
+        assertTrue(newHydrogen.canBond());
+        assertTrue(HYDROGEN.getOrbitalReference().canBond());
+        assertTrue(carbonLastNode.equals(CARBON.getOrbitalReference().getLastNodeEnergyType()));
+    }
 
     @Test
     public void weCanCreateMethaneTest() {
@@ -36,7 +69,7 @@ public class ElementTest {
     }
 
     @Test
-    public void graphTest() {
+    public void graphCarbonChainWithNitrogenTest() {
         Element carbon1 = prepareCompound(CARBON, 3);
         Element carbon2 = prepareCompound(CARBON, 2);
         Element carbon3 = prepareCompound(CARBON, 2);
@@ -53,8 +86,41 @@ public class ElementTest {
         assertFalse(carbon3.canBond());
         assertFalse(carbon4.canBond());
         assertFalse(nitro.canBond());
-        char[][] graph = Element.graph(carbon3);
-        for (char[] line : graph) {
+        graph(carbon3);
+    }
+
+    @Test
+    public void graphBasicBranchedChainTest() {
+        Element carbon1 = prepareCompound(CARBON, 2);
+        Element carbon2 = prepareCompound(CARBON, 2);
+        Element carbon3 = prepareCompound(CARBON, 1);
+        Element carbon4 = prepareCompound(CARBON, 2);
+        Element carbon5 = prepareCompound(CARBON, 3);
+        Element carbon6 = prepareCompound(CARBON, 2);
+        Element carbon7 = prepareCompound(CARBON, 3);
+
+        Element.bond(carbon1, carbon2);
+        Element.bond(carbon2, carbon3);
+        Element.bond(carbon3, carbon4);
+        Element.bond(carbon4, carbon5);
+        //order is currently important in order to get [H C C...] instead of [C H C...]; needs refinement
+        Element.bond(carbon3, carbon6);
+        Element.bond(carbon6, carbon7);
+
+        assertTrue(carbon1.canBond());
+        assertFalse(carbon2.canBond());
+        assertFalse(carbon3.canBond());
+        assertFalse(carbon4.canBond());
+        assertFalse(carbon5.canBond());
+        assertFalse(carbon6.canBond());
+        assertFalse(carbon7.canBond());
+
+        graph(carbon1);
+    }
+
+    private void graph(Element element) {
+        if (!DEBUG) return;
+        for (char[] line : Element.graph(element)) {
             System.out.println(line);
         }
     }
