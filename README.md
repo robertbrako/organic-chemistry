@@ -3,6 +3,13 @@
 <br>
 Converting my organic chemistry textbook into a java program has been a lot of fun!
 
+We currently account for:
+1. Electron Orbitals
+2. Covalent bonding based on outermost orbital
+3. Basic consideration of electronegativity
+4. Basic consideration of bond lengths
+5. Ability to graph results of bonding to verify implementation
+
 Sample input:
 
         Element carbon1 = prepareCompound(CARBON, 3);

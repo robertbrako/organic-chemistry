@@ -15,13 +15,9 @@
 */
 package com.rmbcorp.organicchemistry.elements;
 
-import java.util.HashMap;
-import java.util.Map;
-
 /** this is a bit wonky, since instead of designing an Electron class, I'm letting the orbital handle the electron functionality **/
 class OrbitalNode {
 
-    static final Map<Integer, EnergyType> energyTypeMap = new HashMap<>(8);
     private static long electronCounter = 0;
 
     private EnergyType energyType;
@@ -61,10 +57,10 @@ class OrbitalNode {
     }
 
     boolean bond(OrbitalNode otherOrbitalNode) {
-        if (canBond()) {//for now, we add reference without modifying electron[index] value from 0 to +/-1
+        if (canBond() && otherOrbitalNode.canBond()) {//for now, we add reference without modifying electron[index] value from 0 to +/-1
             electronIds[lastIndex] = otherOrbitalNode.electronIds[otherOrbitalNode.firstBondIndex];
             lastIndex++;
-            otherOrbitalNode.firstBondIndex++;//btw, hopefully I don't need bounds checking on firstBondIndex...
+            otherOrbitalNode.firstBondIndex++;
 
             otherOrbitalNode.electronIds[otherOrbitalNode.lastIndex] = electronIds[firstBondIndex];
             otherOrbitalNode.lastIndex++;
@@ -82,14 +78,13 @@ class OrbitalNode {
 
         EnergyType(int capacity) {
             this.capacity = capacity;
-            energyTypeMap.put(ordinal(), this);
         }
 
         EnergyType next() {
             if (this.equals(ENERGY_TYPE_NONE)) {
                 return ENERGY_TYPE_NONE;
             }
-            return energyTypeMap.get(ordinal() + 1);
+            return values()[ordinal() + 1];
         }
     }
 }

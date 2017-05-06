@@ -16,9 +16,9 @@
 package com.rmbcorp.organicchemistry.elements;
 
 class BondGroup {
-    int[] cardinals = { 0, 0, 0, 0 };//N E S W
-    Element[] bonds;
-    int bondCount = 0;
+
+    private Element[] bonds;
+    private int bondCount = 0;
 
     BondGroup(int size) {
         bonds = new Element[size];
@@ -27,9 +27,8 @@ class BondGroup {
     int add(Element element) {
         int returnIndex = -1;
         int complement = -1;
-        for (int i = 0; i < cardinals.length; i++) {
-            if (cardinals[i] < 1) {
-                cardinals[i] = 1;
+        for (int i = 0; i < bonds.length; i++) {
+            if (bonds[i] == null) {
                 bonds[i] = element;
                 complement = (i + 2) % 4;
                 bondCount++;
@@ -44,12 +43,10 @@ class BondGroup {
     private void rearrangeBond(Element element, int complement) {
         Element opposite = bonds[complement];
         if (opposite != null && element.electroNegativity() > opposite.electroNegativity()) {
-            for (int i = 0; i < cardinals.length; i++) {
-                if (cardinals[i] < 1) {
-                    cardinals[i] = 1;
+            for (int i = 0; i < bonds.length; i++) {
+                if (bonds[i] == null) {
                     bonds[i] = opposite;
-                    bonds[(complement)] = null;
-                    cardinals[(complement)] = 0;
+                    bonds[complement] = null;
                 }
             }
         }
@@ -60,16 +57,13 @@ class BondGroup {
         int complement = (oldIndex + 2) % 4;
         if (bonds[complement] != null) {
             toPop = bonds[complement];
-            bonds[complement] = element;
-            complement = 0;
-            while(bonds[complement] != null) {
-                complement++;
+            int nextOpenSlot = 0;
+            while(bonds[nextOpenSlot] != null) {
+                nextOpenSlot++;
             }
-            bonds[complement] = toPop;
-        } else {
-            bonds[complement] = element;
+            bonds[nextOpenSlot] = toPop;
         }
-        cardinals[complement] = 1;
+        bonds[complement] = element;
         bondCount++;
         rearrangeBond(element, oldIndex);
         return oldIndex;
@@ -86,7 +80,7 @@ class BondGroup {
                 counter++;
             }
         }
-        return  counter;
+        return counter;
     }
 
     Element get(int index) {

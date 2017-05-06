@@ -40,6 +40,10 @@ public class Element {
         return primitive.getAbbv();
     }
 
+    int atomicNumber() {
+        return primitive.getAtomicNumber();
+    }
+
     float electroNegativity() {
         return primitive.getAtomicNumber();//will need to implement actual electronegativity
     }
@@ -70,7 +74,7 @@ public class Element {
         graph.put(coords, rootNode);
         int[] extrema = {0, 0, 0, 0};
         graph(rootNode, rootNode, graph, coords, extrema);
-        return convert(graph, extrema);
+        return shiftMatrix(graph, extrema);
     }
 
     static final int[][] disps = { { -1, 0}, { 0, 2 }, { 1, 0 }, { 0, -2 } };
@@ -79,9 +83,10 @@ public class Element {
         for (int i = 0; i < DEFAULT_BOND_CAPACITY; i++) {
             Element currNode = rootNode.elementsBonded.get(i);
             if (currNode != null && !currNode.equals(prevNode)) {
-                int[] currCoords = {rootNodeCoords[0] + disps[i][0], rootNodeCoords[1] + disps[i][1]};
+                int scaleFactor = BondInfo.getBondLength(rootNode.atomicNumber(), currNode.atomicNumber());
+                int[] currCoords = {rootNodeCoords[0] + disps[i][0] * scaleFactor, rootNodeCoords[1] + disps[i][1] * scaleFactor };
                 graph(rootNode, currNode, graph, currCoords, extrema);
-                putGraph(graph, currNode, currCoords, i);
+                putGraphWithoutCheckingCollision(graph, currNode, currCoords);
                 if (currCoords[0] < extrema[0])
                     extrema[0] = currCoords[0];
                 if (currCoords[1] < extrema[1])
@@ -94,20 +99,11 @@ public class Element {
         }
     }
 
-    private static void putGraph(Map<int[], Element> graph, Element currNode, int[] currCoords, int dir) {
-        int[] currGraphItem;
-        for (Map.Entry<int[], Element> entry : graph.entrySet()) {
-            currGraphItem = entry.getKey();
-            if (currGraphItem[0] == currCoords[0] && currGraphItem[1] == currCoords[1]) {
-                int[] newDisp = disps[(dir + 2) % DEFAULT_BOND_CAPACITY];
-                currCoords[0] += 2 * newDisp[0];
-                currCoords[1] += 2 * newDisp[1];
-            }
-        }
+    private static void putGraphWithoutCheckingCollision(Map<int[], Element> graph, Element currNode, int[] currCoords) {
         graph.put(currCoords, currNode);
     }
 
-    private static char[][] convert(Map<int[], Element> graph, int[] extrema) {
+    private static char[][] shiftMatrix(Map<int[], Element> graph, int[] extrema) {
         int height = extrema[2] - extrema[0];
         int width = (extrema[3] - extrema[1]);
         int[] coords;
